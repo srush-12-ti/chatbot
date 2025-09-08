@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iron Lady Leadership Programs - AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 800px;
+            height: 600px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .chat-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 12px;
+            height: 12px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            border: 1px solid #e1e8ed;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .bot-avatar {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+
+        .user-avatar {
+            background: #667eea;
+            color: white;
+        }
+
+        .quick-suggestions {
+            padding: 10px 20px;
+            background: white;
+            border-top: 1px solid #e1e8ed;
+        }
+
+        .suggestion-btn {
+            background: #f1f3f4;
+            border: none;
+            padding: 8px 12px;
+            margin: 5px 5px 5px 0;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e1e8ed;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e1e8ed;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            margin-left: 10px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .typing-dots {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 18px;
+            border: 1px solid #e1e8ed;
+        }
+
+        .typing-dots span {
+            height: 8px;
+            width: 8px;
+            background: #999;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.5s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .program-card {
+            background: #f8f9ff;
+            border: 1px solid #e1e8ed;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+
+        .program-card h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .program-card p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="status-indicator"></div>
+            <h1>Iron Lady Leadership Assistant</h1>
+            <p>Get instant answers about our leadership programs</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="avatar bot-avatar">IL</div>
+                <div class="message-content">
+                    <strong>Welcome to Iron Lady Leadership Programs! 👋</strong><br><br>
+                    I'm here to help you learn about our transformational leadership programs. You can ask me about:
+                    <br>• Program details and curriculum
+                    <br>• Duration and schedules  
+                    <br>• Certification process
+                    <br>• Our expert mentors
+                    <br>• Enrollment and pricing
+                    <br><br>What would you like to know?
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-suggestions">
+            <button class="suggestion-btn" onclick="sendQuickMessage('Tell me about your programs')">Available Programs</button>
+            <button class="suggestion-btn" onclick="sendQuickMessage('Program duration')">Duration</button>
+            <button class="suggestion-btn" onclick="sendQuickMessage('Certification details')">Certification</button>
+            <button class="suggestion-btn" onclick="sendQuickMessage('Who are the mentors')">Mentors</button>
+            <button class="suggestion-btn" onclick="sendQuickMessage('Pricing information')">Pricing</button>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="avatar bot-avatar">IL</div>
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <input type="text" class="input-field" id="messageInput" placeholder="Ask me anything about Iron Lady programs..." onkeypress="handleKeyPress(event)">
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Knowledge base for Iron Lady Leadership Programs
+        const knowledgeBase = {
+            programs: [
+                {
+                    name: "Executive Leadership Mastery",
+                    duration: "12 weeks",
+                    mode: "Hybrid (Online + In-Person)",
+                    description: "Comprehensive program for senior executives and C-suite professionals",
+                    features: ["Strategic thinking", "Crisis management", "Team dynamics", "Global leadership"]
+                },
+                {
+                    name: "Emerging Leaders Program",
+                    duration: "8 weeks",
+                    mode: "Online",
+                    description: "Perfect for mid-level managers ready to step into leadership roles",
+                    features: ["Leadership foundations", "Communication skills", "Performance management", "Innovation mindset"]
+                },
+                {
+                    name: "Women in Leadership",
+                    duration: "10 weeks",
+                    mode: "Hybrid (Online + In-Person)",
+                    description: "Specialized program addressing unique challenges faced by women leaders",
+                    features: ["Confidence building", "Negotiation skills", "Work-life integration", "Mentorship networks"]
+                },
+                {
+                    name: "Digital Leadership Transformation",
+                    duration: "6 weeks",
+                    mode: "Online",
+                    description: "Leading in the digital age with technology and innovation focus",
+                    features: ["Digital strategy", "Remote team leadership", "Change management", "Data-driven decisions"]
+                }
+            ],
+            mentors: [
+                "Dr. Sarah Chen - Former Fortune 500 CEO, 20+ years experience",
+                "Marcus Johnson - Leadership Coach & Bestselling Author",
+                "Prof. Elena Rodriguez - Harvard Business School Faculty",
+                "James Thompson - Tech Industry Veteran & Startup Founder",
+                "Dr. Priya Sharma - Organizational Psychology Expert"
+            ],
+            certification: {
+                process: "Complete all modules, submit capstone project, pass final assessment",
+                accreditation: "Accredited by International Leadership Institute (ILI)",
+                certificate: "Digital certificate + Physical certificate mailed",
+                validity: "Lifetime validity with continuing education credits"
+            },
+            pricing: {
+                "Executive Leadership Mastery": "$2,999",
+                "Emerging Leaders Program": "$1,799",
+                "Women in Leadership": "$2,299",
+                "Digital Leadership Transformation": "$1,499",
+                "Group Discounts": "15% off for 5+ participants",
+                "Payment Plans": "3 or 6-month installment options available"
+            }
+        };
+
+        function addMessage(content, isUser = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = `avatar ${isUser ? 'user-avatar' : 'bot-avatar'}`;
+            avatarDiv.textContent = isUser ? 'YOU' : 'IL';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content;
+            
+            if (isUser) {
+                messageDiv.appendChild(contentDiv);
+                messageDiv.appendChild(avatarDiv);
+            } else {
+                messageDiv.appendChild(avatarDiv);
+                messageDiv.appendChild(contentDiv);
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'flex';
+            document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        function generateResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            // Programs information
+            if (message.includes('program') || message.includes('course') || message.includes('available')) {
+                let response = "<strong>Our Leadership Programs:</strong><br><br>";
+                knowledgeBase.programs.forEach(program => {
+                    response += `<div class="program-card">
+                        <h4>${program.name}</h4>
+                        <p><strong>Duration:</strong> ${program.duration}</p>
+                        <p><strong>Mode:</strong> ${program.mode}</p>
+                        <p><strong>Description:</strong> ${program.description}</p>
+                        <p><strong>Key Features:</strong> ${program.features.join(', ')}</p>
+                    </div>`;
+                });
+                return response;
+            }
+            
+            // Duration information
+            if (message.includes('duration') || message.includes('long') || message.includes('time')) {
+                let response = "<strong>Program Durations:</strong><br><br>";
+                knowledgeBase.programs.forEach(program => {
+                    response += `• <strong>${program.name}:</strong> ${program.duration}<br>`;
+                });
+                response += "<br>All programs include flexible scheduling options and self-paced learning modules.";
+                return response;
+            }
+            
+            // Mode/format information
+            if (message.includes('mode') || message.includes('online') || message.includes('person') || message.includes('hybrid')) {
+                let response = "<strong>Program Formats:</strong><br><br>";
+                knowledgeBase.programs.forEach(program => {
+                    response += `• <strong>${program.name}:</strong> ${program.mode}<br>`;
+                });
+                response += "<br>Hybrid programs include monthly in-person workshops in major cities.";
+                return response;
+            }
+            
+            // Mentors information
+            if (message.includes('mentor') || message.includes('instructor') || message.includes('teacher') || message.includes('faculty')) {
+                let response = "<strong>Our Expert Mentors:</strong><br><br>";
+                knowledgeBase.mentors.forEach(mentor => {
+                    response += `• ${mentor}<br>`;
+                });
+                response += "<br>All mentors provide 1-on-1 coaching sessions and are available for Q&A throughout your program.";
+                return response;
+            }
+            
+            // Certification information
+            if (message.includes('certificat') || message.includes('accredit') || message.includes('credential')) {
+                const cert = knowledgeBase.certification;
+                return `<strong>Certification Details:</strong><br><br>
+                    <strong>Process:</strong> ${cert.process}<br>
+                    <strong>Accreditation:</strong> ${cert.accreditation}<br>
+                    <strong>Certificate Format:</strong> ${cert.certificate}<br>
+                    <strong>Validity:</strong> ${cert.validity}<br><br>
+                    Your certification demonstrates mastery of leadership competencies recognized globally.`;
+            }
+            
+            // Pricing information
+            // Pricing information
+            if (message.includes('price') || message.includes('cost') || message.includes('fee') || message.includes('payment')) {
+                let response = "<strong>Program Pricing:</strong><br><br>";
+                knowledgeBase.programs.forEach(program => {
+                const price = knowledgeBase.pricing[program.name] || "Contact us for details";
+                response += `<div class="program-card">
+                <h4>${program.name}</h4>
+                <p><strong>Duration:</strong> ${program.duration}</p>
+                <p><strong>Mode:</strong> ${program.mode}</p>
+                <p><strong>Description:</strong> ${program.description}</p>
+                <p><strong>Price:</strong> ${price}</p>
+            </div>`;
+        });
+
+            // Add general pricing info
+            response += `<br><strong>Additional Info:</strong><br>
+                • Group Discounts: ${knowledgeBase.pricing["Group Discounts"]}<br>
+                • Payment Plans: ${knowledgeBase.pricing["Payment Plans"]}<br>
+                <br>All programs include materials, mentorship, certification, and lifetime access to resources.`;
+
+            return response;
+        }
+
+            
+            // Enrollment information
+            if (message.includes('enroll') || message.includes('register') || message.includes('apply') || message.includes('start')) {
+                return `<strong>Ready to Start Your Leadership Journey?</strong><br><br>
+                    <strong>Enrollment Process:</strong><br>
+                    1. Choose your program<br>
+                    2. Complete online application<br>
+                    3. Schedule discovery call<br>
+                    4. Receive acceptance & payment details<br>
+                    5. Begin your transformation!<br><br>
+                    <strong>Next Cohorts Start:</strong><br>
+                    • January 15th<br>
+                    • April 1st<br>
+                    • July 15th<br>
+                    • October 1st<br><br>
+                    Ready to apply? Contact us at enroll@ironladyleadership.com`;
+            }
+            
+            // Contact information
+            if (message.includes('contact') || message.includes('phone') || message.includes('email') || message.includes('reach')) {
+                return `<strong>Get in Touch:</strong><br><br>
+                    📧 <strong>Email:</strong> info@ironladyleadership.com<br>
+                    📱 <strong>Phone:</strong> +1 (555) 123-4567<br>
+                    🌐 <strong>Website:</strong> www.ironladyleadership.com<br>
+                    📍 <strong>Address:</strong> 123 Leadership Ave, Executive District<br><br>
+                    <strong>Office Hours:</strong> Mon-Fri 9AM-6PM EST<br>
+                    We typically respond within 2 hours during business hours.`;
+            }
+            
+            // Default response with suggestions
+            return `I'd be happy to help you learn about Iron Lady Leadership Programs! 
+                    <br><br>You can ask me about:
+                    <br>• Available programs and curriculum
+                    <br>• Program duration and schedules
+                    <br>• Online vs hybrid formats
+                    <br>• Our expert mentors and faculty
+                    <br>• Certification process
+                    <br>• Pricing and payment options
+                    <br>• Enrollment and application process
+                    <br><br>What specific information would you like to know?`;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, true);
+            input.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Simulate processing delay and generate response
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = generateResponse(message);
+                addMessage(response);
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function sendQuickMessage(message) {
+            document.getElementById('messageInput').value = message;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Auto-focus on input field
+        document.getElementById('messageInput').focus();
+    </script>
+</body>
+</html>
